@@ -72,7 +72,6 @@
             </div>
           </template>
 
-          <!-- Adiciona template para botões -->
           <template v-else-if="as === 'button' && children">
             <div :class="getButtonContainerClass(children)">
               <v-btn
@@ -108,7 +107,6 @@
             />
           </template>
 
-          <!-- Exibe mensagens de erro para cada campo -->
           <div v-if="errors[name]" class="text-red-500 mt-1">
             {{ errors[name] }}
           </div>
@@ -119,8 +117,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed } from "vue";
-import { useForm, useField } from "vee-validate";
+import { reactive } from "vue";
+import { useForm } from "vee-validate";
 import {
   VTextField,
   VTextarea,
@@ -134,28 +132,7 @@ import {
   VContainer,
 } from "vuetify/components";
 import { formSchema } from "../formSchema";
-
-interface SchemaField {
-  as: string;
-  name: string;
-  label: string;
-  children?: Array<{
-    text: string;
-    value?: string;
-    type?: string;
-    color?: string;
-    tailwindClasses?: string;
-    position?: "left" | "center" | "right";
-    action?: () => void;
-  }>;
-  rules?: (value: any) => boolean | string;
-  columns: number;
-  [key: string]: any;
-}
-
-interface Schema {
-  fields: SchemaField[];
-}
+import { Schema } from "../types";
 
 const props = defineProps<{ schema: Schema }>();
 
@@ -163,6 +140,7 @@ const { schema } = toRefs(props);
 
 import { toTypedSchema } from "@vee-validate/zod";
 import * as zod from "zod";
+
 const validationSchema = toTypedSchema(
   zod.object({
     email: zod
@@ -175,13 +153,13 @@ const validationSchema = toTypedSchema(
       .min(8, { message: "Too short" }),
   })
 );
-const { handleSubmit, errors } = useForm({
+const { handleSubmit } = useForm({
   validationSchema,
 });
 
 // Mapeamento de regras do Zod para Vee-Validate
 const mapZodToVeeValidate = (
-  zodSchema: z.ZodType<any>
+  zodSchema: zod.ZodType<any>
 ): ((value: any) => boolean | string) => {
   return (value: any) => {
     const result = zodSchema.safeParse(value);
@@ -192,14 +170,12 @@ const mapZodToVeeValidate = (
   };
 };
 
-// Atualizar regras do esquema para usar funções de validação
 schema.value.fields.forEach((field) => {
   field.rules = mapZodToVeeValidate(
     formSchema.shape[field.name as keyof typeof formSchema.shape]
   );
 });
 
-// Verifica se `schema.fields` está definido e é um array
 const formValues = reactive<Record<string, any>>(
   (schema.value.fields || []).reduce((acc, field) => {
     acc[field.name] = field.default || (field.as === "checkbox" ? [] : "");

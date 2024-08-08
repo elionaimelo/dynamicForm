@@ -5,10 +5,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import DynamicForm from "./components/DynamicForm.vue";
 import { formSchema } from "./formSchema";
+import { Schema } from "./types";
 
-const formSchemaObject = {
+const formSchemaObject = ref<Schema>({
   fields: [
     {
       label: "Nome",
@@ -109,5 +111,5 @@ const formSchemaObject = {
       columns: 12,
     },
   ],
-};
+});
 </script>
