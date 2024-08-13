@@ -17,14 +17,15 @@
         >
           <template v-if="as === 'select' && children">
             <v-select
+              v-model="formValues[name]"
+              return-object
+              variant="underlined"
               :items="children"
               :item-props="(item) => ({ title: item.text })"
               :label="label"
-              v-model="formValues[name]"
-              return-object
               :rules="[rules]"
               :error-messages="errors[name] ? [errors[name]] : []"
-            ></v-select>
+            />
           </template>
 
           <template v-else-if="as === 'radio' && children">
@@ -63,9 +64,10 @@
               </div>
               <v-checkbox
                 v-model="formValues[name]"
+                hide-details
+                variant="outlined"
                 color="red"
                 :false-value="false"
-                hide-details
                 :label="label"
                 :true-value="true"
               />
@@ -95,13 +97,33 @@
             </div>
           </template>
 
+          <template v-else-if="as === 'birthDate' && children">
+            <v-date-picker elevation="24"></v-date-picker>
+          </template>
+
+          <template v-else-if="as === 'phone'">
+            <v-text-field
+              v-model="formValues[name]"
+              variant="underlined"
+              :label="label"
+              :rules="[rules]"
+              :error-messages="errors[name] ? [errors[name]] : []"
+              v-maska="'(##) #####-####'"
+            />
+          </template>
+
+          <template v-else-if="as === 'money'">
+            <VCurrencyField v-model="formValues[name]" />
+          </template>
+
           <template v-else>
             <component
-              :is="resolveComponent(as)"
               v-model="formValues[name]"
+              v-bind="attrs"
+              variant="underlined"
+              :is="resolveComponent(as)"
               :name="name"
               :label="label"
-              v-bind="attrs"
               :rules="[rules]"
               :error-messages="errors[name] ? [errors[name]] : []"
             />
@@ -133,6 +155,8 @@ import {
 } from "vuetify/components";
 import { formSchema } from "../formSchema";
 import { Schema } from "../types";
+import { vMaska } from "maska/vue";
+import { useCurrencyInput } from "vue-currency-input";
 
 const props = defineProps<{ schema: Schema }>();
 
@@ -166,14 +190,19 @@ const mapZodToVeeValidate = (
     if (result.success) {
       return true;
     }
+    // Retorna a primeira mensagem de erro ou uma mensagem genérica se não houver
     return result.error.errors[0]?.message || "Valor inválido";
   };
 };
 
 schema.value.fields.forEach((field) => {
-  field.rules = mapZodToVeeValidate(
-    formSchema.shape[field.name as keyof typeof formSchema.shape]
-  );
+  const rule = formSchema.shape[field.name as keyof typeof formSchema.shape];
+  if (rule) {
+    field.rules = mapZodToVeeValidate(rule);
+  } else {
+    // Regra padrão para evitar retorno undefined
+    field.rules = () => true;
+  }
 });
 
 const formValues = reactive<Record<string, any>>(

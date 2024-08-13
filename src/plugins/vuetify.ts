@@ -10,10 +10,13 @@ import 'vuetify/styles'
 
 // Composables
 import { createVuetify } from 'vuetify'
+import DateFnsAdapter from '@date-io/date-fns'
+import ptBr from 'date-fns/locale/pt-BR'
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
-  theme: {
-    defaultTheme: 'dark',
+  date: {
+    adapter: new DateFnsAdapter(),
+    locale: { 'pt-BR': ptBr },
   },
 })

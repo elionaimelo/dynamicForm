@@ -87,6 +87,28 @@ const formSchemaObject = ref<Schema>({
       columns: 6,
     },
     {
+      label: "Telefone",
+      name: "phone",
+      as: "phone",
+      rules: formSchema.shape.phone,
+      columns: 4,
+      mask: "(##) #####-####",
+    },
+    {
+      label: "Data de nascimento",
+      name: "birthDate",
+      as: "date",
+      rules: formSchema.shape.birthDate,
+      columns: 4,
+    },
+    {
+      label: "Valor monetário",
+      name: "money",
+      as: "money",
+      rules: formSchema.shape.money,
+      columns: 4,
+    },
+    {
       label: "Ações",
       name: "actions",
       as: "button",
